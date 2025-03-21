@@ -1,0 +1,275 @@
+#+title: [Doom] Emacs Config
+* Notes
+ - =load!= for loading external *.el files relative to this one
+ - =use-package!= for configuring packages
+ - =after!= for running code after a package has loaded
+ - =add-load-path!= for adding directories to the =load-path=, relative to
+   this file. Emacs searches the =load-path= when you load packages with
+   =require= or =use-package=.
+ - =map!= for binding new keys
+* Initial config
+#+begin_src emacs-lisp
+;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
+#+end_src
+** Id
+GPG, ORG, LICENSE snippets, etc
+#+begin_src emacs-lisp
+(setq user-full-name "Yaxley Peaks"
+      user-mail-address "yax@yaxley.in")
+
+#+end_src
+** Fonts
+- =doom-font=: Primary monospace font
+- =doom-variable-pitch-font=: PRimary non monospace font
+- =doom-big-font=: Used for =doom-big-font-mode=
+- =doom-unicode-font=: Emojis and such
+- =doom-serif-font=: Used for =fixed-pitch-serif=
+=C-h v doom-font= for documentation and examples
+=M-x describe-font= helps
+#+begin_src emacs-lisp
+(setq doom-font (font-spec :family "JetBrains Mono"  :weight 'normal)
+      doom-variable-pitch-font (font-spec :family "Inter"  :weight 'normal)
+      doom-symbol-font doom-font)
+#+end_src
+** Theme
+#+begin_src emacs-lisp
+(setq doom-theme 'doom-vibrant)
+#+end_src
+* General config
+Line numbers; absolute, =relative= is an option.
+#+begin_src emacs-lisp
+(setq display-line-numbers-type t)
+#+end_src
+I need to come up with a better keybind, some mode overwrite this
+#+begin_src emacs-lisp
+(map! :localleader :desc "Open treemacs" :n "f" 'treemacs)
+#+end_src
+#+begin_src emacs-lisp
+(when (display-graphic-p)
+  (toggle-frame-maximized))
+
+(setq shell-file-name (executable-find
+                       "bash"))
+(setq-default vterm-shell
+              "/usr/bin/fish")
+(setq-default explicit-shell-file-name
+              "/usr/bin/fish")
+
+(setq markdown-display-remote-images t)
+(require 'dap-cpptools)
+(require 'dap-lldb)
+#+end_src
+** Org stuff
+#+begin_src emacs-lisp
+(setq org-directory "~/orgs/")
+(require 'org-superstar)
+(add-hook 'org-mode-hook (lambda () (org-superstar-mode 1)))
+
+#+end_src
+** VSCode style terminal
+=C-`= to open terminal on bottom quarter of screen
+#+begin_src emacs-lisp
+(defvar yax/is-terminal-open nil)
+(defvar yax/open-terminal-window)
+
+(defun yax/open-term ()
+  (if (not yax/is-terminal-open)
+      (progn
+        (setq yax/is-terminal-open t)
+        (split-window nil (truncate (/ window-min-height 0.40)) 'above)
+        (term "/usr/bin/fish")
+        (evil-insert 1)
+        (setq yax/open-terminal-window (selected-window)))
+    (setq yax/is-terminal-open nil)))
+
+(defun yax/close-term ()
+  (if yax/is-terminal-open
+      (progn
+        (setq yax/is-terminal-open nil)
+        (delete-window yax/open-terminal-window)
+        (setq yax/open-terminal-window nil))))
+
+(defun yax/toggle-term ()
+  (interactive)
+  (if yax/is-terminal-open
+      (yax/close-term)
+    (yax/open-term)))
+
+(map! :desc "Toggle terminal" :ni "C-`" 'yax/toggle-term)
+#+end_src
+** Fun stuff
+*** Frame title
+Pick 1 random on startup
+#+begin_src emacs-lisp
+(setq frame-titles-list '("Vim"
+                          "Sublime"
+                          "Emacs"
+                          "Visual Studio Code"
+                          "IntelliJ Idea"
+                          "Atom"
+                          "Brackets"
+                          "Dreamweaver"
+                          "Notepad"
+                          "Wordpad"
+                          "XCode"
+                          "Builder"))
+
+(defun yax/get-random-element-from-list (lst)
+  (let* ((size (length lst))
+         (index (random size)))
+    (nth index lst)))
+
+
+(setq frame-title-format
+      (concat "%b - "
+              (yax/get-random-element-from-list frame-titles-list)))
+
+#+end_src
+*** Splash screen
+Copied from [[https://discourse.doomemacs.org/t/how-to-change-your-splash-screen/57#customize-the-ascii-banner-2][Doom discourse]]
+#+begin_src emacs-lisp
+(defun ascii-banner ()
+  (let* ((banner '("⠀⠀⠀⠀⠀⠀⠀⠀⢀⠠⠄⠒⠒⠉⠉⠉⠉⠉⠓⠂⠤⢀⠀⠀⠀⠀⠀⠀⠀⠀"
+                   "⠀⠀⠀⠀⠀⢀⠄⠊⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠢⢄⠀⠀⠀⠀⠀"
+                   "⠀⠀⠀⢀⠔⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠑⢄⠀⠀⠀"
+                   "⠀⠀⡰⠁⠀⠀⠀⠀⠀⣀⣀⣀⡀⠀⠀⠀⠀⠀⣀⣀⣀⡀⠀⠀⠀⠀⠀⠢⠀⠀"
+                   "⠀⡐⠀⠀⠀⢀⣤⣶⣿⣿⣿⣿⣿⣦⠀⠀⣰⣾⣿⣿⣿⣿⣷⣦⣄⠀⠀⠀⠱⠀"
+                   "⡰⠀⠀⢀⣴⣿⠟⠉⢈⠟⠁⢹⣿⣿⡇⢀⣿⠟⠁⠀⡬⠛⣿⣿⣿⣷⣄⠀⠀⢡"
+                   "⡇⠀⣠⣿⡿⠁⠀⠀⢎⠀⢀⣼⣿⣿⡇⢸⠏⠀⠀⠘⠀⣰⣿⣿⣿⣿⣿⣦⠀⢸"
+                   "⡇⢠⠃⡿⠁⠀⠀⠀⠀⣷⣿⣿⣿⣿⡿⢸⠀⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⡆⢧⢸"
+                   "⡇⡞⠀⡇⠀⠀⠀⠀⣰⣿⣿⣿⣿⣿⡇⢸⣆⡀⠀⢀⣼⣿⣿⣿⣿⣿⣿⡇⢸⢸"
+                   "⡇⢧⠀⢷⣄⣀⣀⣴⣿⣿⣿⣿⣿⣿⡇⠸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠁⢸⢸"
+                   "⢰⠸⡄⠘⣿⡟⠻⣿⣿⣿⣿⣿⣿⡿⠁⠀⢻⣿⡉⠙⣿⣿⣿⣿⣿⣿⡏⠀⡞⡸"
+                   "⠀⢂⠹⣄⠘⣧⣠⣾⣿⡿⢿⣣⡿⠁⠀⠀⠀⠻⣿⣿⢿⡿⢟⣾⣿⠏⢀⠜⠠⠁"
+                   "⠀⠀⠢⡈⠑⠚⠿⠷⠶⠿⠟⠋⠀⠀⠀⠀⠀⠀⠈⠛⠿⠾⠿⠿⠕⠛⠁⡰⠁⠀"
+                   "⠀⠀⠀⠑⢄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡠⠊⠀⠀⠀"
+                   "⠀⠀⠀⠀⠀⠑⠠⡀⠀⠀⠀⠀⠀⠠⠞⠙⠦⠀⠀⠀⠀⠀⢀⡠⠊⠀⠀⠀⠀⠀"
+                   "⠀⠀⠀⠀⠀⠀⠀⠀⠁⠂⠤⢀⣀⣀⣀⣀⣀⣀⣀⡠⠔⠂⠁⠀⠀⠀⠀⠀⠀⠀"))
+
+         (longest-line (apply #'max (mapcar #'length banner))))
+    (put-text-property
+     (point)
+     (dolist (line banner (point))
+       (insert (+doom-dashboard--center
+                +doom-dashboard--width
+                (concat line (make-string (max 0 (- longest-line (length line))) 32)))
+               "\n"))
+     'face 'doom-dashboard-banner)))
+
+(setq +doom-dashboard-ascii-banner-fn #'ascii-banner)
+#+end_src
+*** SpOnGeBoB CaSe
+#+begin_src emacs-lisp
+(defun sponge-case-text-in-region (start end)
+  (interactive "r")
+  (setq sponge-case--temp-boolean t)
+  (save-excursion
+    (goto-char start)
+    (while ( < start end)
+      (let ((char (following-char)))
+        (delete-char 1)
+        (insert-char
+         (if (cl-evenp (- end start)) (upcase char) (downcase char))))
+      (setq start (1+ start)))))
+#+end_src
+
+#+RESULTS:
+: SpOnGe-cAsE-TeXt-iN-ReGiOn
+
+*** Reverse text
+#+begin_src emacs-lisp
+(defun reverse-text (start end)
+  (interactive "r")
+  (let* ((text (buffer-substring-no-properties start end))
+         (reversed-text (reverse text)))
+     (progn
+       (delete-region start end)
+       (insert reversed-text))))
+#+end_src
+
+#+RESULTS:
+: reverse-text
+
+*** Did you konw taht you can raed text wihch has been srmbclaed lkie tihs?
+#+begin_src emacs-lisp
+(defun string-to-words (str)
+  (string-split str " " nil))
+
+(defun scramble-word (word)
+  (let* ((word-length (length word))
+         (first-letter (substring word 0 1))
+         (last-letter (substring word (- word-length 1)))
+         (rest-of-word (substring word 1 (- word-length 1)))
+         (scrambled-letters (concat (sort (append rest-of-word '()) (lambda (a b) (cl-evenp (random)))) "")))
+    (concat first-letter scrambled-letters last-letter)))
+
+(defun scramble-words (s) (string-join
+                           (mapcar 'scramble-word
+                                   (string-to-words s)) " "))
+
+(defun scramble-words-in-region (s e)
+  (interactive "r")
+  (defun f (x) (scramble-words x))
+  (let ((buffer-text (buffer-substring s e)))
+    (replace-region-contents s e (lambda ()
+                                   ;; call a few times to properly churn
+                                   (f (f (f (f buffer-text))))))))
+#+end_src
+
+#+RESULTS:
+: scramble-words-in-region
+
+** Gnus stuff
+#+begin_src emacs-lisp
+(setq gnus-select-method '(nntp "news.eternal-september.org")
+      gnus-read-active-file nil
+      gnus-use-trees nil)
+
+(setq gnus-posting-styles
+      '((".*"
+         (signature "(yaxp me) => t")
+         (organization "Not a Noiseless Patient Spider"))))
+#+end_src
+** IRC stuff
+*** .authinfo.gpg
+Reads =.authinfo.gpg= and fetched libera chat password.
+
+Needs line like:
+
+=machine irc.libera.chat login yax__ force yes password <password>=
+
+in =~/.authinfo.gpg=
+#+begin_src emacs-lisp
+(defun my-fetch-password (&rest params)
+  (require 'auth-source)
+  (let ((match (car (apply #'auth-source-search params))))
+    (if match
+        (let ((secret (plist-get match :secret)))
+          (if (functionp secret)
+              '()
+            secret))
+      (error "Password not found for %S" params))))
+
+(defun my-nickserv-password (_)
+  (my-fetch-password :user "yax__" :host "irc.libera.chat"))
+#+end_src
+*** Circe config
+#+begin_src emacs-lisp
+(after! circe
+  (set-irc-server! "irc.libera.chat"
+    `(:tls t
+      :port 6697
+      :nick "yax__"
+      :sasl-username "yax__"
+      :sasl-password my-nickserv-password
+      :channels ("#emacs" "#developersindia")))
+  (set-irc-server! "soju1"
+    `(:tls t
+      :host "vm"
+      :port 6697
+      :nick "yax"
+      :sasl-username "yaxley_peaks"
+      :sasl-password "12345678")))
+
+;; IRC stuff
+#+end_src
