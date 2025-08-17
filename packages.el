@@ -54,19 +54,18 @@
 (package! geiser)
 ;; (package! geiser-guile)
 ;; (package! geiser-racket)
-(package! quack)
-(package! gnuplot)
-(package! lean4-mode :recipe
-  (:host github
-   :repo "leanprover/lean4-mode"
-   :files ("*.el" "data")))
+;; (package! quack)
+;; (package! gnuplot)
+;; (package! lean4-mode :recipe
+;;   (:host github
+;;    :repo "leanprover/lean4-mode"
+;;    :files ("*.el" "data")))
 
-(package! screenshot :recipe
-  (:host github
-   :repo "tecosaur/screenshot"))
 
-(package! speed-type)
+;; (package! speed-type)
 (package! elpher)
 
 (package! ada-mode)
 (package! wgrep)
+
+(package! typst-ts-mode :recipe (:host nil :repo "https://git.sr.ht/~meow_king/typst-ts-mode"))
