@@ -40,7 +40,7 @@ Line numbers; absolute, =relative= is an option.
 #+begin_src emacs-lisp
 (setq display-line-numbers-type t)
 #+end_src
-I need to come up with a better keybind, some mode overwrite this
+I need to come up with a better keybind, some mode overwrites this
 #+begin_src emacs-lisp
 (map! :localleader :desc "Open treemacs" :n "f" 'treemacs)
 #+end_src
@@ -232,7 +232,7 @@ Copied from [[https://discourse.doomemacs.org/t/how-to-change-your-splash-screen
 #+end_src
 ** IRC stuff
 *** .authinfo.gpg
-Reads =.authinfo.gpg= and fetched libera chat password.
+Reads =.authinfo.gpg= and fetches libera chat password.
 
 Needs line like:
 
